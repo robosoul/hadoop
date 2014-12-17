@@ -20,24 +20,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.hoshi.tut.util.collect.CountSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.StringTokenizer;
-
 /**
- * Same as WordCountV2 example, except we'll use a CountSet (local aggregation
+ * Same as WordCountV3 example, except we'll use a CountSet (local aggregation
  * optimization in Mapper) to count each term in input, and emmit only unique
  * terms and their counts.
  *
@@ -45,60 +38,6 @@ import java.util.StringTokenizer;
  */
 public class WordCountV4 extends Configured implements Tool {
     public static final Logger log = LoggerFactory.getLogger(WordCountV4.class);
-
-    public static class WordCountV4Mapper extends Mapper<LongWritable, Text, Text, IntWritable> {
-        private final IntWritable count = new IntWritable();
-        private final Text word = new Text();
-
-        @Override
-        protected void map(
-                final LongWritable key,
-                final Text value,
-                final Context context)
-        throws IOException, InterruptedException {
-
-            final StringTokenizer tokenizer =
-                    new StringTokenizer(value.toString());
-
-            final CountSet<String> wordsCountSet = new CountSet<String>();
-
-            while (tokenizer.hasMoreTokens()) {
-                // DO NOT EMMIT A KEY-VALUE PAIR FOR EACH TERM IN INPUT...
-                //context.write(new Text(words.nextToken()), new IntWritable(1));
-
-                wordsCountSet.add(tokenizer.nextToken());
-            }
-
-            for (String s : wordsCountSet.data()) {
-                word.set(s);
-                count.set(wordsCountSet.count(s));
-
-                // ...BUT RATHER EMMIT KEY-VALUE PAIR FOR EACH *UNIQUE* TERM IN INPUT.
-                context.write(word, count);
-            }
-        }
-    }
-
-    public static class WordCountV4Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-        // reuse variable 'word', do not create new one every time
-        private IntWritable result = new IntWritable();
-
-        @Override
-        public void reduce(
-                final Text key,
-                final Iterable<IntWritable> values,
-                final Context context)
-        throws IOException, InterruptedException {
-            int sum = 0;
-
-            for (IntWritable val : values) {
-                sum += val.get();
-            }
-
-            result.set(sum);
-            context.write(key, result);
-        }
-    }
 
     @Override
     public int run(final String[] args) throws Exception {
@@ -108,10 +47,10 @@ public class WordCountV4 extends Configured implements Tool {
 
         job.setJarByClass(WordCountV4.class);
 
-        job.setMapperClass(WordCountV4Mapper.class);
-        job.setReducerClass(WordCountV4Reducer.class);
+        job.setMapperClass(WordCountMapperV3.class);
+        job.setReducerClass(WordCountReducerV2.class);
 
-        job.setCombinerClass(WordCountV4Reducer.class);
+        job.setCombinerClass(WordCountReducerV2.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
