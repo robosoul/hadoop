@@ -60,6 +60,8 @@ public class WordCountUnitTest {
 
         reduceDriver.setReducer(new WordCountReducerV2());
 
+        final Text key1 = new Text("in");
+
         final List<IntWritable> values1 = new ArrayList<IntWritable>() {{
             add(new IntWritable(1));
             add(new IntWritable(3));
@@ -67,15 +69,13 @@ public class WordCountUnitTest {
             // total of 11 occurrence
         }};
 
+        final Text key2 = new Text("hobbit");
+
         final List<IntWritable> values2 = new ArrayList<IntWritable>() {{
             add(new IntWritable(1));
             add(new IntWritable(2));
             // total of 3 occurrence
         }};
-
-
-        final Text key1 = new Text("in");
-        final Text key2 = new Text("hobbit");
 
         reduceDriver.addInput(key1, values1);
         reduceDriver.addInput(key2, values2);
@@ -96,7 +96,7 @@ public class WordCountUnitTest {
         mapReduceDriver.setCombiner(new WordCountReducerV2());
 
         mapReduceDriver.addInput(new LongWritable(0), TEST_INPUT_1);
-        mapReduceDriver.addInput(new LongWritable(0), TEST_INPUT_2);
+        mapReduceDriver.addInput(new LongWritable(7), TEST_INPUT_2);
 
         mapReduceDriver.addOutput(new Text("in"),     new IntWritable(3));
         mapReduceDriver.addOutput(new Text("a"),      new IntWritable(2));
