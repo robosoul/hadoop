@@ -3,7 +3,7 @@
  *
  * http://www.vast.com
  */
-package org.hoshi.tut.wordcount;
+package org.hoshi.tut.hadoop.wordcount;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;

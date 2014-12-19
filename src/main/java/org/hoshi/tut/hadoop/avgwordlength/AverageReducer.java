@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.hoshi.tut.wordcount;
+package org.hoshi.tut.hadoop.avgwordlength;
 
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -32,32 +33,37 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * WordCountReducerV1 with some optimization.
- *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
-public class WordCountReducerV2 extends Reducer<Text, IntWritable, Text, IntWritable> {
-    public static final Logger log = LoggerFactory.getLogger(WordCountReducerV2.class);
+public class AverageReducer extends Reducer<Text, IntWritable, Text, DoubleWritable> {
+    public static final Logger log = LoggerFactory.getLogger(AverageReducer.class);
 
-    private final IntWritable result;
+    private final DoubleWritable avg;
 
-    public WordCountReducerV2() {
-        result = new IntWritable();
+    public AverageReducer() {
+        avg = new DoubleWritable();
     }
 
     @Override
-    protected void reduce(
+    public void reduce(
             final Text key,
             final Iterable<IntWritable> values,
             final Context context)
     throws IOException, InterruptedException {
-        int sum = 0;
+        long count = 0;
+        long sum = 0;
 
-        for (IntWritable value : values) {
-            sum += value.get();
+        for (IntWritable length : values) {
+            sum += length.get();
+            ++count;
         }
 
-        result.set(sum);
-        context.write(key, result);
+        if (count != 0) {
+            avg.set((double) sum / (double)count);
+            context.write(key, avg);
+        }
     }
 }
+
+
+

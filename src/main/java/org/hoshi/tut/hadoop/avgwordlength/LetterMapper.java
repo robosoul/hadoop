@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoshi.tut.wordcount;
+package org.hoshi.tut.hadoop.avgwordlength;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -27,27 +27,34 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
- * Classic Hadoop MapReduce 'Word count' mapper.
+ * For all input words emits first letter (lower cased) and length of each word.
  *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
-public class WordCountMapperV1 extends Mapper<LongWritable, Text, Text, IntWritable> {
-    public static final Logger log =
-            LoggerFactory.getLogger(WordCountMapperV1.class);
+public class LetterMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+    public static final Logger log = LoggerFactory.getLogger(LetterMapper.class);
 
-    public static final Pattern WORDS_SPLITTER = Pattern.compile("\\W+");
+    public static final Pattern WORD_PATTERN = Pattern.compile("\\W+");
+
+    private final Text firstLetter;
+    private final IntWritable wordLength;
+
+    public LetterMapper() {
+        this.firstLetter = new Text();
+        this.wordLength = new IntWritable();
+    }
 
     @Override
-    protected void map(
-            final LongWritable key,
-            final Text value,
-            final Context context)
+    public void map(final LongWritable key, final Text value, final Context context)
     throws IOException, InterruptedException {
-        final String[] words = WORDS_SPLITTER.split(value.toString());
+        final String line = value.toString().toLowerCase();
 
-        for (String word : words) {
+        for (String word : WORD_PATTERN.split(line)) {
             if (!word.isEmpty()) {
-                context.write(new Text(word), new IntWritable(1));
+                firstLetter.set(word.substring(0, 1));
+                wordLength.set(word.length());
+
+                context.write(firstLetter, wordLength);
             }
         }
     }

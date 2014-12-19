@@ -10,7 +10,7 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
+ * The above copyright notice and this permission notice shall be included in 
  * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,63 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.hoshi.tut.wordcount;
+package org.hoshi.tut.hadoop.longestword;
 
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.hoshi.tut.util.collect.CountSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
- * Same as WordCountMapperV2 example, except we'll use a count map (local
- * aggregation optimization in mapper) to count each term in input, and emmit
- * only unique terms and their counts.
- *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
-public class WordCountMapperV3 extends Mapper<LongWritable, Text, Text, IntWritable> {
-    public static final Logger log = LoggerFactory.getLogger(WordCountMapperV3.class);
+public class FirstLetterMapper extends Mapper<LongWritable, Text, Text, Text> {
+    public static final Logger log = LoggerFactory.getLogger(FirstLetterMapper.class);
 
-    private final IntWritable count;
+    public static final Pattern WORD_PATTERN = Pattern.compile("\\W+");
+
+    private final Text firstLetter;
     private final Text word;
 
-    public WordCountMapperV3() {
-        count = new IntWritable();
-        word  = new Text();
+    public FirstLetterMapper() {
+        this.firstLetter = new Text();
+        this.word = new Text();
     }
 
     @Override
-    protected void map(
-            final LongWritable key,
-            final Text value,
-            final Context context)
+    public void map(final LongWritable key, final Text value, final Context context)
     throws IOException, InterruptedException {
+        final String line = value.toString().toLowerCase();
 
-        final String[] words =
-                WordCountMapperV1.WORDS_SPLITTER.split(value.toString());
-
-        final CountSet<String> wordsCountSet = new CountSet<>();
-
-        for (String w : words) {
-            // DO NOT EMMIT A KEY-VALUE PAIR FOR EACH TERM IN INPUT...
-            //context.write(new Text(words.nextToken()), new IntWritable(1));
-
+        for (String w : WORD_PATTERN.split(line)) {
             if (!w.isEmpty()) {
-                wordsCountSet.add(w);
+                firstLetter.set(w.substring(0, 1));
+                word.set(w);
+
+                context.write(firstLetter, word);
             }
-        }
-
-        for (String w : wordsCountSet.data()) {
-            word.set(w);
-            count.set(wordsCountSet.count(w));
-
-            // ...BUT RATHER EMMIT KEY-VALUE PAIR FOR EACH *UNIQUE* TERM IN INPUT.
-            context.write(word, count);
         }
     }
 }

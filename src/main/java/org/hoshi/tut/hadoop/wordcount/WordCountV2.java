@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoshi.tut.wordcount;
+package org.hoshi.tut.hadoop.wordcount;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -30,32 +30,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Similar to WordCountV4 example but we'll use CountSet to count each term in
- * *ALL* inputs for this Mapper.
+ *
+ * Hadoop MapReduce WordCountV1 example with optimization.
  *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
-public class WordCountV5 extends Configured implements Tool {
-    public static final Logger log = LoggerFactory.getLogger(WordCountV5.class);
+public class WordCountV2 extends Configured implements Tool {
+    public static final Logger log = LoggerFactory.getLogger(WordCountV2.class);
 
     @Override
     public int run(final String[] args) throws Exception {
         final Configuration conf = this.getConf();
 
-        final Job job = new Job(conf, "word-count-v5");
+        final Job job = new Job(conf, "word-count-v2");
 
-        job.setJarByClass(WordCountV5.class);
+        job.setJarByClass(WordCountV2.class);
 
-        job.setMapperClass(WordCountMapperV4.class);
+        job.setMapperClass(WordCountMapperV1.class);
         job.setReducerClass(WordCountReducerV2.class);
-
-        // no need for combiner since data is aggregated on mapper
-        //job.setCombinerClass(WordCountV4Reducer.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
 
-        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileInputFormat.setInputPaths(job,  new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         return (job.waitForCompletion(true)) ? 0 : 1;

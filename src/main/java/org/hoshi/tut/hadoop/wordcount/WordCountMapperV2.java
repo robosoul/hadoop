@@ -21,34 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.hoshi.tut.wordcount;
+package org.hoshi.tut.hadoop.wordcount;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 /**
+ * WordCountMapperV1 with some optimization.
+ *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
-public class WordCountReducerV1 extends Reducer<Text, IntWritable, Text, IntWritable> {
-    public static final Logger log = LoggerFactory.getLogger(WordCountReducerV1.class);
+public class WordCountMapperV2 extends Mapper<IntWritable, Text, Text, IntWritable> {
+    public static final Logger log =
+            LoggerFactory.getLogger(WordCountMapperV2.class);
+
+    // use this constant as value of 1
+    private static final IntWritable ONE = new IntWritable(1);
+
+    // reuse variable 'word', do not create new one every time
+    // after context.write(), 'word' is serialized, so it's safe to reuse it
+    private final Text word;
+
+    public WordCountMapperV2() {
+        this.word = new Text();
+    }
 
     @Override
-    protected void reduce(
-            final Text key,
-            final Iterable<IntWritable> values,
+    protected void map(
+            final IntWritable key,
+            final Text value,
             final Context context)
     throws IOException, InterruptedException {
-        int sum = 0;
+        final String lineLowerCased = value.toString().toLowerCase();
 
-        for (IntWritable value : values) {
-            sum += value.get();
+        final String[] words =
+                WordCountMapperV1.WORDS_SPLITTER.split(lineLowerCased);
+
+        for (String w : words) {
+            if (!w.isEmpty()) {
+                word.set(w.toLowerCase());
+                context.write(word, ONE);
+            }
         }
-
-        context.write(key, new IntWritable(sum));
     }
 }

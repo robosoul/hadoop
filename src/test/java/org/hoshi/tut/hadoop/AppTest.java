@@ -1,4 +1,4 @@
-package org.hoshi.tut;
+package org.hoshi.tut.hadoop;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
