@@ -66,7 +66,9 @@ public class WordCountMapperV3 extends Mapper<LongWritable, Text, Text, IntWrita
         final CountSet<String> wordsCountSet = new CountSet<>();
 
         for (String w : words) {
-            // DO NOT EMMIT A KEY-VALUE PAIR FOR EACH TERM IN INPUT...
+            /*
+             * DO NOT EMMIT A KEY-VALUE PAIR FOR EACH TERM IN INPUT...
+             */
             //context.write(new Text(words.nextToken()), new IntWritable(1));
 
             if (!w.isEmpty()) {
@@ -78,7 +80,9 @@ public class WordCountMapperV3 extends Mapper<LongWritable, Text, Text, IntWrita
             word.set(w);
             count.set(wordsCountSet.count(w));
 
-            // ...BUT RATHER EMMIT KEY-VALUE PAIR FOR EACH *UNIQUE* TERM IN INPUT.
+            /*
+             * ...BUT RATHER EMMIT KEY-VALUE PAIR FOR EACH *UNIQUE* TERM IN INPUT.
+             */
             context.write(word, count);
         }
     }

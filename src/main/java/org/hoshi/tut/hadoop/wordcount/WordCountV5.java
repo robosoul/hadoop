@@ -40,23 +40,55 @@ public class WordCountV5 extends Configured implements Tool {
 
     @Override
     public int run(final String[] args) throws Exception {
-        final Configuration conf = this.getConf();
+        /*
+		 * Validate that two arguments were passed from the command line.
+		 */
+        if (args.length != 2) {
+            System.out.println("Usage: WordCountV5 <input dir> <output dir>\n");
+            System.exit(-1);
+        }
 
-        final Job job = new Job(conf, "word-count-v5");
+        final Job job = new Job(getConf(), "word-count-v5");
 
+        /*
+         * Specify the jar file that contains your driver, mapper, and reducer.
+         * Hadoop will transfer this jar file to nodes in cluster running mapper
+         * and reducer tasks.
+         */
         job.setJarByClass(WordCountV5.class);
 
+        /*
+         * Specify the paths to the input and output data based on the
+         * command-line arguments.
+         */
+        FileInputFormat.setInputPaths(job,  new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        /*
+         * Specify the mapper and reducer classes.
+         */
         job.setMapperClass(WordCountMapperV4.class);
         job.setReducerClass(WordCountReducerV2.class);
 
-        // no need for combiner since data is aggregated on mapper
-        //job.setCombinerClass(WordCountV4Reducer.class);
+        /*
+         * No need for combiner since data is aggregated on mapper.
+         */
+        //job.setCombinerClass(WordCountReducerV2.class);
 
+        /*
+         * For the word count application, the mapper's output keys and
+         * values have the same data types as the reducer's output keys
+         * and values: Text and IntWritable.
+         *
+         * When they are not the same data types, setMapOutputKeyClass and
+         * setMapOutputValueClass methods must be called.
+         */
+
+        /*
+         * Specify the job's output key and value classes.
+         */
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
-
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         return (job.waitForCompletion(true)) ? 0 : 1;
     }
@@ -64,7 +96,7 @@ public class WordCountV5 extends Configured implements Tool {
     public static void main(final String[] args) throws Exception {
         final int res = ToolRunner.run(
                 new Configuration(),
-                new WordCountV2(),
+                new WordCountV5(),
                 args);
 
         System.exit(res);

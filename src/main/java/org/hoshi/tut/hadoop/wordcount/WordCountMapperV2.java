@@ -24,6 +24,7 @@
 package org.hoshi.tut.hadoop.wordcount;
 
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.slf4j.Logger;
@@ -36,15 +37,19 @@ import java.io.IOException;
  *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
-public class WordCountMapperV2 extends Mapper<IntWritable, Text, Text, IntWritable> {
+public class WordCountMapperV2 extends Mapper<LongWritable, Text, Text, IntWritable> {
     public static final Logger log =
             LoggerFactory.getLogger(WordCountMapperV2.class);
 
-    // use this constant as value of 1
+    /*
+     * Use this constant as value of 1.
+     */
     private static final IntWritable ONE = new IntWritable(1);
 
-    // reuse variable 'word', do not create new one every time
-    // after context.write(), 'word' is serialized, so it's safe to reuse it
+    /*
+     * Reuse variable 'word', do not create new one every time.
+     * After context.write(), 'word' is serialized, so it's safe to reuse it.
+     */
     private final Text word;
 
     public WordCountMapperV2() {
@@ -53,7 +58,7 @@ public class WordCountMapperV2 extends Mapper<IntWritable, Text, Text, IntWritab
 
     @Override
     protected void map(
-            final IntWritable key,
+            final LongWritable key,
             final Text value,
             final Context context)
     throws IOException, InterruptedException {

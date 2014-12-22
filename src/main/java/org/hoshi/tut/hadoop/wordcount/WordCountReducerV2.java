@@ -37,8 +37,13 @@ import java.io.IOException;
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
 public class WordCountReducerV2 extends Reducer<Text, IntWritable, Text, IntWritable> {
-    public static final Logger log = LoggerFactory.getLogger(WordCountReducerV2.class);
+    public static final Logger log =
+            LoggerFactory.getLogger(WordCountReducerV2.class);
 
+    /*
+     * Reuse variable 'result', do not create new one every time.
+     * After context.write(), 'result' is serialized, so it's safe to reuse it.
+     */
     private final IntWritable result;
 
     public WordCountReducerV2() {

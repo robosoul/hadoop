@@ -32,10 +32,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
+ * Simple sum Reducer: emits key and sum on input values.
+ *
  * @author Luka Obradovic (obradovic.luka.83@gmail.com)
  */
 public class WordCountReducerV1 extends Reducer<Text, IntWritable, Text, IntWritable> {
-    public static final Logger log = LoggerFactory.getLogger(WordCountReducerV1.class);
+    public static final Logger log =
+            LoggerFactory.getLogger(WordCountReducerV1.class);
 
     @Override
     protected void reduce(

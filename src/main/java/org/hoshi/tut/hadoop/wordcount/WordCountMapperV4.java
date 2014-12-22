@@ -61,6 +61,9 @@ public class WordCountMapperV4 extends Mapper<LongWritable, Text, Text, IntWrita
     throws IOException, InterruptedException {
         super.setup(context);
 
+        /*
+         * Reset at the start.
+         */
         wordsCountSet = new CountSet<>();
     }
 
