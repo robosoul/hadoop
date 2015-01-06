@@ -83,6 +83,7 @@ public class AnagramFinder extends Configured implements Tool {
 		 * Specify the mapper and reducer classes.
 		 */
         job.setMapperClass(AnagramMapper.class);
+        job.setCombinerClass(AnagramCombiner.class);
         job.setReducerClass(AnagramReducer.class);
 
 		/*
