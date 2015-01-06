@@ -8,7 +8,7 @@ import org.testng.annotations.Test;
 
 public class InvertedIndexUnitTest {
     public static final Text INPUT_FILE_NAME = new Text("hobbit.txt");
-    public static final String INPUT_FILE_PATH = "books/jrr/" + INPUT_FILE_NAME;
+    public static final String INPUT_FILE_PATH = "books/jrrt/" + INPUT_FILE_NAME;
 
     public static final Text TEST_INPUT_1 = new Text("In a hole in the ground there lived a hobbit.");
 
